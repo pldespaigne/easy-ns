@@ -16,8 +16,8 @@ import { RootDomain } from './rootDomain'
 
 export class ENS {
 
-    provider: ethers.providers.Web3Provider
-    // signer: ethers.Signer
+    provider: ethers.providers.Web3Provider // ! change this for a signer
+    // signer: ethers.Signer // TODO signer contains a provider and is the most abstract and agnostic things to use !!!! wallet extends signer
     registry: ethers.Contract
     initialization: Promise<boolean>
     domains: RootDomain[]
