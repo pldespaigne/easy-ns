@@ -5,7 +5,7 @@ import { ethers } from 'ethers'
 // Internal import
 import { Domain } from './domain'
 import { REGISTRY } from './constants'
-import { RootDomain } from './rootDomain'
+// import { RootDomain } from './rootDomain'
 
 /**
  * Main class of the Easy-NS library, it contains :
@@ -20,7 +20,7 @@ export class ENS {
     signer: ethers.Signer
     registry: ethers.Contract
     initialization: Promise<boolean>
-    domains: RootDomain[]
+    domains: Domain[]
 
 
     /**
@@ -30,9 +30,11 @@ export class ENS {
      * @example const ens = new easyns.ENS()
      */
     constructor(signer: ethers.Signer) {
+        // this.userAddress = ''
+        // this.registry = new ethers.Contract()
         this.signer = signer
         this.domains = []
-        this.initialization = new Promise<boolean>((resolve, reject) => {       // setting a Promise that resolve when the initialization has ended
+        this.initialization = new Promise<boolean>((resolve, reject) => {   // setting a Promise that resolve when the initialization has ended
             this.init().then(() => resolve(true)).catch(err => reject(err))
         })
     }
@@ -44,15 +46,17 @@ export class ENS {
      */
     async init() {
         this.userAddress = await this.signer.getAddress()
-        const net  = await this.signer.provider.getNetwork()                                               // Retreiving the network from the provider
-        this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.signer)            // initializing the Registry contract
+        if(!this.signer.provider) throw new Error('The signer has not any providers set')
+        const net  = await this.signer.provider.getNetwork()                            // Retreiving the network from the provider
+        if(!net.ensAddress) throw new Error('The network doesn\'t have ens')
+        this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.signer)  // initializing the Registry contract
         this.registry = await this.registry.connect(this.signer)
-        this.domains.push(new RootDomain('eth', this.registry, this.signer))         // adding 'eth' TLD
+        this.domains.push(new Domain('eth', this.registry, this.signer))    // adding 'eth' TLD
         // TODO handle other network agnostic TLDs
 
         if (net.name === 'ropsten') {                                                               // for the Ropsten testnet
             // this.domains.push(new RootDomain('test', this.registry, this.provider, this.signer))    // adding 'test' TLD
-            this.domains.push(new RootDomain('test', this.registry, this.signer))    // adding 'test' TLD
+            this.domains.push(new Domain('test', this.registry, this.signer))    // adding 'test' TLD
             // TODO handle other Ropsten TLDs
         }
         // TODO handle other networks
@@ -74,7 +78,7 @@ export class ENS {
     public async domain(name: string): Promise<Domain> {
         const nodes = name.split('.')                                       // split name in a array of domain name : 'mywallet.vitalik.eth' -> ['mywallet', 'vitalik', 'eth']
         const rootName = nodes.pop()                                        // get the root domain and remove it from the nodes array: 'eth' and ['mywallet', 'vitalik']
-
+        if(!rootName) throw new Error('rootName is undefined')
         if (nodes.length == 0) {                                            // it's a root domain
             throw new Error('adding a root domain is forbiden : ' + name)
         } else {
@@ -91,7 +95,7 @@ export class ENS {
      * @throws this function throws if the provided name doesn't exists
      */
 
-    getRoot(name: string): RootDomain { // ? should this be private ?
+    getRoot(name: string): Domain { // ? should this be private ?
         for(let root of this.domains) {             // iterate on each RootDomain of the array
             if (root.name === name) return root     // and check if the names match
         }

@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers/utils'
 const cth = require('content-hash') // I use require because content-hash is not a TypeScript lib // ! FIND ANOTHER WAY
 
 // Internal import
-import { RootDomain } from './rootDomain'
+// import { RootDomain } from './rootDomain'
 import { RESOLVER } from './constants'
 
 /**
@@ -22,7 +22,7 @@ export class Domain{
     nodeNameHash: string
     name: string
     namehash: string
-    parent: RootDomain | Domain
+    parent: Domain
     subdomains: Domain[]
     initialization: Promise<boolean>
 
@@ -157,8 +157,8 @@ export class Domain{
         }
     }
 
-    get rootParent(): RootDomain {
-        if (this.parent.parent === null) return <RootDomain> this.parent
+    get rootParent(): Domain {
+        if (!this.parent.parent) return this.parent
         else return this.parent.rootParent
     }
 
