@@ -9,7 +9,7 @@ import { RootDomain } from './rootDomain'
 
 /**
  * Main class of the Easy-NS library, it contains :
- * - the Web 3 Provider (for interaction with the Ethtereum Blockchain)
+ * - a Signer (for interaction with the Ethtereum Blockchain)
  * - the ENS Registry (the main ENS smart contract)
  * - a cache of all domains queried (it's an array of domains trees)
  */
