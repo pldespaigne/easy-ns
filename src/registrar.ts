@@ -25,18 +25,18 @@ export class Registrar { // ! DO NOT USE THIS !!!!! CREATE ONE CLASS BY REGISTRA
     type: RegistrarTypes
     userAddress: ethers.Signer
 
-    constructor(address: string, rootName: string, provider: ethers.providers.Provider, signer?: ethers.Signer) {
+    constructor(address: string, rootName: string, signer: ethers.Signer) {
 
         // if (signer) this.signer = signer
 
         switch (rootName) {
             case 'eth':
                 this.type = RegistrarTypes.AUCTION
-                this.contract = new ethers.Contract(address, REGISTRAR.AUCTION, provider)
+                this.contract = new ethers.Contract(address, REGISTRAR.AUCTION, signer)
                 break;
             case 'test':
                 this.type = RegistrarTypes.FIFS
-                this.contract = new ethers.Contract(address, REGISTRAR.FIFS, provider)
+                this.contract = new ethers.Contract(address, REGISTRAR.FIFS, signer)
                 break;
             // TODO REVERSE REGISTRAR
             // TODO other REGISTRAR such as .xyz, .luxe, ...

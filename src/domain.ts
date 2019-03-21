@@ -41,14 +41,15 @@ export class Domain{
      * @param {ethers.Contract} registry : the Registry contract
      * @param {ethers.providers.Provider} provider : the Web 3 Provider
      */
-    constructor(name: string, registry: ethers.Contract, provider: ethers.providers.Web3Provider) {
+    // constructor(name: string, registry: ethers.Contract, provider: ethers.providers.Web3Provider) {
+    constructor(name: string, registry: ethers.Contract, signer: ethers.Signer) {
         this.registry = registry
         this.name = name
         this.nodeName = name.split('.')[0] // get the domain name from the full name : 'mywallet.vitalik.eth' -> 'mywallet'
         this.namehash = ethers.utils.namehash(this.name)
         this.subdomains = []
         this.initialization = new Promise<boolean>((resolve, reject) => {
-            this.refresh().then(() => this.refreshResolve(provider)).then(() => resolve(true)).catch(err => reject(err))
+            this.refresh().then(() => this.refreshResolve(signer)).then(() => resolve(true)).catch(err => reject(err))
         });
     }
 
@@ -65,12 +66,13 @@ export class Domain{
      * Get/Refresh the level 2 info of the domain
      * @param {ethers.providers.Provider} provider 
      */
-    async refreshResolve(provider: ethers.providers.Web3Provider) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
+    // async refreshResolve(provider: ethers.providers.Web3Provider) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
+    async refreshResolve(signer: ethers.Signer) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
         
         if (ethers.utils.bigNumberify(this.resolverAddress).isZero()) return // check if this domain has a resolver set
 
-        let resolver = new ethers.Contract(this.resolverAddress, RESOLVER.ABI, provider) // instentiate the resolver
-        resolver = resolver.connect(provider.getSigner())
+        let resolver = new ethers.Contract(this.resolverAddress, RESOLVER.ABI, signer) // instentiate the resolver
+        resolver = resolver.connect(signer)
         this.resolvedName = await resolver.name(this.namehash) // get the name
         this.address = await resolver.addr(this.namehash) // get the address
 
@@ -100,7 +102,7 @@ export class Domain{
      * @returns {Promise<Domain>} : the retreived/created domain
      * @see ENS.domain()
      */
-    async getDomain(nodes: string[], registry: ethers.Contract, provider: ethers.providers.Web3Provider): Promise<Domain> {
+    async getDomain(nodes: string[], registry: ethers.Contract, signer: ethers.Signer): Promise<Domain> {
         
         // EXAMPLE of the 'eth' domain tree
         //
@@ -134,14 +136,14 @@ export class Domain{
                 if (nodes.length == 0) { // if is's the last node simply return it
                     return domain
                 } else {
-                    return domain.getDomain(nodes, registry, provider) // if there is more subnode, recursivlly call the function
+                    return domain.getDomain(nodes, registry, signer) // if there is more subnode, recursivlly call the function
                 }
             }
         }
 
         // here the node does not exist yet
         const fullName = nodeName + '.' + this.name // get the domain name of the node
-        let newDomain = new Domain(fullName, registry, provider) // instentiation of the domain
+        let newDomain = new Domain(fullName, registry, signer) // instentiation of the domain
         await newDomain.initialization // waiting for the full initialization of the domail (i.e. level 1 & 2 calls)
         this.subdomains.push(newDomain) // we add the new domain as a subdomain of the current one
         newDomain.parent = this // we set the parent of the new domain as the current domain
@@ -149,7 +151,7 @@ export class Domain{
         if (nodes.length == 0) {
             return newDomain // if it's the end, simply retrun the new domain
         } else {
-            return newDomain.getDomain(nodes, registry, provider) // if not, continue
+            return newDomain.getDomain(nodes, registry, signer) // if not, continue
         }
     }
 

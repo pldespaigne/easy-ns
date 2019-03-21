@@ -16,8 +16,8 @@ import { RootDomain } from './rootDomain'
 
 export class ENS {
 
-    provider: ethers.providers.Web3Provider // ! change this for a signer
-    // signer: ethers.Signer // TODO signer contains a provider and is the most abstract and agnostic things to use !!!! wallet extends signer
+    // provider: ethers.providers.Web3Provider // ! change this for a signer
+    signer: ethers.Signer // TODO signer contains a provider and is the most abstract and agnostic things to use !!!! wallet extends signer
     registry: ethers.Contract
     initialization: Promise<boolean>
     domains: RootDomain[]
@@ -31,9 +31,10 @@ export class ENS {
      */
 
     // constructor(provider: ethers.providers.Provider = ethers.getDefaultProvider('ropsten')){//, signer?: ethers.Signer) {
-    constructor(provider: ethers.providers.Web3Provider){//, signer?: ethers.Signer) {
-        this.provider = provider
-        // this.signer = signer // ! SIGNER ???
+    // constructor(provider: ethers.providers.Web3Provider){//, signer?: ethers.Signer) {
+    constructor(signer: ethers.Signer) {
+        // this.provider = provider
+        this.signer = signer // ! SIGNER ???
         // if (signer) console.log('signe', signer)
         // console.log('this', this.signer)
         this.domains = []
@@ -49,19 +50,19 @@ export class ENS {
      */
 
     async init() {
-        const net  = await this.provider.getNetwork()                                               // Retreiving the network from the provider
-        this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.provider)            // initializing the Registry contract
-        this.registry = await this.registry.connect(this.provider.getSigner())
+        const net  = await this.signer.provider.getNetwork()                                               // Retreiving the network from the provider
+        this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.signer)            // initializing the Registry contract
+        this.registry = await this.registry.connect(this.signer)
         // this.registry.connect(this.signer) // ! SIGNER ???
         // console.log('DEBUG', this.signer, this.registry) // ! SIGNER ??
         
         // this.domains.push(new RootDomain('eth', this.registry, this.provider, this.signer))         // adding 'eth' TLD  // ! SIGNER ???
-        this.domains.push(new RootDomain('eth', this.registry, this.provider))         // adding 'eth' TLD  // ! SIGNER ???
+        this.domains.push(new RootDomain('eth', this.registry, this.signer))         // adding 'eth' TLD  // ! SIGNER ???
         // TODO handle other network agnostic TLDs
 
         if (net.name === 'ropsten') {                                                               // for the Ropsten testnet
             // this.domains.push(new RootDomain('test', this.registry, this.provider, this.signer))    // adding 'test' TLD // ! SIGNER ???
-            this.domains.push(new RootDomain('test', this.registry, this.provider))    // adding 'test' TLD
+            this.domains.push(new RootDomain('test', this.registry, this.signer))    // adding 'test' TLD
             // TODO handle other Ropsten TLDs
         }
         // TODO handle other networks
@@ -88,7 +89,7 @@ export class ENS {
             throw new Error('adding a root domain is forbiden : ' + name)
         } else {
             const root = this.getRoot(rootName)                             // retreive the good domain tree from the cache
-            return root.getDomain(nodes, this.registry, this.provider)      // continue on that tree
+            return root.getDomain(nodes, this.registry, this.signer)      // continue on that tree
         }
     }
 

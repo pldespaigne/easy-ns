@@ -21,8 +21,8 @@ export class RootDomain extends Domain {
      * @param registry : the main ENS registry
      * @param provider : a Web 3 provider
      */
-    constructor(name: string, registry: ethers.Contract, provider: ethers.providers.Web3Provider, signer?: ethers.Signer) {
-        super(name, registry, provider) // call the suer constructor
+    constructor(name: string, registry: ethers.Contract, signer: ethers.Signer) {
+        super(name, registry, signer) // call the suer constructor
         this.parent = null // a root domain has no parent // ? is it a good idea to set it to null
         // this.initialization.then(() => this.setRegistrar(provider, signer)) // wait for super.refresh because we need ownerAddress in setRegistrar function
     }
