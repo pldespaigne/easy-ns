@@ -12,4 +12,5 @@ window.onload = async () => {
     console.log(address)
 
     ens = new easyns.ENS(signer)
+    ens.initialization.then(() => console.log('ENS IS READY'))
 }

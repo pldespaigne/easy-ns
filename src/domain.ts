@@ -19,6 +19,7 @@ export class Domain{
     // LEVEL 0
     registry: ethers.Contract
     nodeName: string
+    nodeNameHash: string
     name: string
     namehash: string
     parent: RootDomain | Domain
@@ -46,6 +47,7 @@ export class Domain{
         this.registry = registry
         this.name = name
         this.nodeName = name.split('.')[0] // get the domain name from the full name : 'mywallet.vitalik.eth' -> 'mywallet'
+        this.nodeNameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(this.nodeName))
         this.namehash = ethers.utils.namehash(this.name)
         this.subdomains = []
         this.initialization = new Promise<boolean>((resolve, reject) => {
@@ -175,5 +177,10 @@ export class Domain{
 
     async setTtl(address: string): Promise<any> {
         return this.registry.setTTL(this.namehash, address)
+    }
+
+    async setSubdomain(name: string, owner: string): Promise<any> {
+        const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name))
+        return this.registry.setSubnodeOwner(this.namehash, hash, owner)
     }
 }

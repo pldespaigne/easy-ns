@@ -17,6 +17,7 @@ import { RootDomain } from './rootDomain'
 export class ENS {
 
     // provider: ethers.providers.Web3Provider // ! change this for a signer
+    userAddress: string
     signer: ethers.Signer // TODO signer contains a provider and is the most abstract and agnostic things to use !!!! wallet extends signer
     registry: ethers.Contract
     initialization: Promise<boolean>
@@ -50,6 +51,7 @@ export class ENS {
      */
 
     async init() {
+        this.userAddress = await this.signer.getAddress()
         const net  = await this.signer.provider.getNetwork()                                               // Retreiving the network from the provider
         this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.signer)            // initializing the Registry contract
         this.registry = await this.registry.connect(this.signer)
