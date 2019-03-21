@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/utils';
+import { TransactionResponse } from 'ethers/providers';
 /**
  * The class representing an ENS Domain, it contains 3 level of properties:
  * - level 0 : directly available info
@@ -50,8 +51,9 @@ export declare class Domain {
      */
     getDomain(nodes: string[], registry: ethers.Contract, signer: ethers.Signer): Promise<Domain>;
     readonly rootParent: Domain;
-    setResolver(resolverAddress: string): Promise<any>;
-    setOwner(address: string): Promise<any>;
-    setTtl(address: string): Promise<any>;
-    setSubdomain(name: string, owner: string): Promise<any>;
+    readonly isOwned: boolean;
+    setResolver(resolverAddress: string): Promise<TransactionResponse>;
+    setOwner(address: string): Promise<TransactionResponse>;
+    setTtl(address: string): Promise<TransactionResponse>;
+    setSubdomain(name: string, owner: string): Promise<TransactionResponse>;
 }

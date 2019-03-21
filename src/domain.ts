@@ -7,6 +7,7 @@ const cth = require('content-hash') // I use require because content-hash is not
 // Internal import
 // import { RootDomain } from './rootDomain'
 import { RESOLVER } from './constants'
+import { TransactionResponse } from 'ethers/providers';
 
 /**
  * The class representing an ENS Domain, it contains 3 level of properties:
@@ -162,24 +163,28 @@ export class Domain{
         else return this.parent.rootParent
     }
 
+    get isOwned(): boolean {
+        return !ethers.utils.bigNumberify(this.ownerAddress).eq(0)
+    }
+
     // async registrarInfo(): Promise<Object> {
     //     const root = this.rootParent
     //     return await root.registrar.info(this.nodeName)
     // }
 
-    async setResolver(resolverAddress: string): Promise<any> {
+    async setResolver(resolverAddress: string): Promise<TransactionResponse> {
         return this.registry.setResolver(this.namehash, resolverAddress)
     }
 
-    async setOwner(address: string): Promise<any> {
+    async setOwner(address: string): Promise<TransactionResponse> {
         return this.registry.setOwner(this.namehash, address)
     }
 
-    async setTtl(address: string): Promise<any> {
+    async setTtl(address: string): Promise<TransactionResponse> {
         return this.registry.setTTL(this.namehash, address)
     }
 
-    async setSubdomain(name: string, owner: string): Promise<any> { // TODO set new subdomain as child of the current domain
+    async setSubdomain(name: string, owner: string): Promise<TransactionResponse> { // TODO set new subdomain as child of the current domain
         const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name))
         return this.registry.setSubnodeOwner(this.namehash, hash, owner)
     }

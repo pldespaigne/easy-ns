@@ -207,6 +207,13 @@ var Domain = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Domain.prototype, "isOwned", {
+        get: function () {
+            return !ethers_1.ethers.utils.bigNumberify(this.ownerAddress).eq(0);
+        },
+        enumerable: true,
+        configurable: true
+    });
     // async registrarInfo(): Promise<Object> {
     //     const root = this.rootParent
     //     return await root.registrar.info(this.nodeName)
