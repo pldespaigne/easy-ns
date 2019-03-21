@@ -16,9 +16,8 @@ import { RootDomain } from './rootDomain'
 
 export class ENS {
 
-    // provider: ethers.providers.Web3Provider // ! change this for a signer
     userAddress: string
-    signer: ethers.Signer // TODO signer contains a provider and is the most abstract and agnostic things to use !!!! wallet extends signer
+    signer: ethers.Signer
     registry: ethers.Contract
     initialization: Promise<boolean>
     domains: RootDomain[]
@@ -26,18 +25,12 @@ export class ENS {
 
     /**
      * The ENS constructor. You should call this function before any use of this library.
-     * @param {ethers.providers.Provider} provider : a Web 3 provider that will be used for all interaction with the Ethereum Blockchain, if not specified, ethers's default provider for Ropsten will be used
+     * @param {ethers.Signer} signer : the signer that will be used for all interaction with the Ethereum Blockchain
      * @returns {ENS}
      * @example const ens = new easyns.ENS()
      */
-
-    // constructor(provider: ethers.providers.Provider = ethers.getDefaultProvider('ropsten')){//, signer?: ethers.Signer) {
-    // constructor(provider: ethers.providers.Web3Provider){//, signer?: ethers.Signer) {
     constructor(signer: ethers.Signer) {
-        // this.provider = provider
-        this.signer = signer // ! SIGNER ???
-        // if (signer) console.log('signe', signer)
-        // console.log('this', this.signer)
+        this.signer = signer
         this.domains = []
         this.initialization = new Promise<boolean>((resolve, reject) => {       // setting a Promise that resolve when the initialization has ended
             this.init().then(() => resolve(true)).catch(err => reject(err))
@@ -49,21 +42,16 @@ export class ENS {
      * This function will initialize the ENS Registry smart contract (this.registry),
      * and build the begining of the cache (this.domains) by adding all known TLDs of this network.
      */
-
     async init() {
         this.userAddress = await this.signer.getAddress()
         const net  = await this.signer.provider.getNetwork()                                               // Retreiving the network from the provider
         this.registry = new ethers.Contract(net.ensAddress, REGISTRY.ABI, this.signer)            // initializing the Registry contract
         this.registry = await this.registry.connect(this.signer)
-        // this.registry.connect(this.signer) // ! SIGNER ???
-        // console.log('DEBUG', this.signer, this.registry) // ! SIGNER ??
-        
-        // this.domains.push(new RootDomain('eth', this.registry, this.provider, this.signer))         // adding 'eth' TLD  // ! SIGNER ???
-        this.domains.push(new RootDomain('eth', this.registry, this.signer))         // adding 'eth' TLD  // ! SIGNER ???
+        this.domains.push(new RootDomain('eth', this.registry, this.signer))         // adding 'eth' TLD
         // TODO handle other network agnostic TLDs
 
         if (net.name === 'ropsten') {                                                               // for the Ropsten testnet
-            // this.domains.push(new RootDomain('test', this.registry, this.provider, this.signer))    // adding 'test' TLD // ! SIGNER ???
+            // this.domains.push(new RootDomain('test', this.registry, this.provider, this.signer))    // adding 'test' TLD
             this.domains.push(new RootDomain('test', this.registry, this.signer))    // adding 'test' TLD
             // TODO handle other Ropsten TLDs
         }

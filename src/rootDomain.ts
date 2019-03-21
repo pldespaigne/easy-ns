@@ -17,9 +17,9 @@ export class RootDomain extends Domain {
 
     /**
      * Constructor for a Root Domain.
-     * @param name : the Root Domain names ('eth', 'test', ....)
-     * @param registry : the main ENS registry
-     * @param provider : a Web 3 provider
+     * @param {string} name : the Root Domain names ('eth', 'test', ....)
+     * @param {ethers.Contract} registry : the main ENS registry
+     * @param {ethers.Signer} signer : the signer
      */
     constructor(name: string, registry: ethers.Contract, signer: ethers.Signer) {
         super(name, registry, signer) // call the suer constructor

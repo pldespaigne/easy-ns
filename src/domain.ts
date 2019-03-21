@@ -40,7 +40,7 @@ export class Domain{
      * Constructor of a Domain.
      * @param {string} name : the full domain name : ('vitalik.eth')
      * @param {ethers.Contract} registry : the Registry contract
-     * @param {ethers.providers.Provider} provider : the Web 3 Provider
+     * @param {ethers.Signer} signer : the signer
      */
     // constructor(name: string, registry: ethers.Contract, provider: ethers.providers.Web3Provider) {
     constructor(name: string, registry: ethers.Contract, signer: ethers.Signer) {
@@ -66,7 +66,7 @@ export class Domain{
 
     /**
      * Get/Refresh the level 2 info of the domain
-     * @param {ethers.providers.Provider} provider 
+     * @param {ethers.Signer} signer : the signer
      */
     // async refreshResolve(provider: ethers.providers.Web3Provider) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
     async refreshResolve(signer: ethers.Signer) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
@@ -100,7 +100,7 @@ export class Domain{
      * - if there is more subnode, recursively call this function on the next subnodes
      * @param {string[]} nodes : the array of domain to treat
      * @param {ethers.Contract} registry : the ENS Registry
-     * @param {ethers.providers.Provider} provider : the Web 3 Provider
+     * @param {ethers.Signer} signer : the signer
      * @returns {Promise<Domain>} : the retreived/created domain
      * @see ENS.domain()
      */
@@ -179,7 +179,7 @@ export class Domain{
         return this.registry.setTTL(this.namehash, address)
     }
 
-    async setSubdomain(name: string, owner: string): Promise<any> {
+    async setSubdomain(name: string, owner: string): Promise<any> { // TODO set new subdomain as child of the current domain
         const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name))
         return this.registry.setSubnodeOwner(this.namehash, hash, owner)
     }
