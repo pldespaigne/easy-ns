@@ -1,6 +1,6 @@
 
 // External import
-import { ethers } from 'ethers'
+import { ethers, constants } from 'ethers'
 import { BigNumber } from 'ethers/utils'
 const cth = require('content-hash') // I use require because content-hash is not a TypeScript lib // ! FIND ANOTHER WAY
 
@@ -31,6 +31,7 @@ export class Domain{
     ownerAddress: string
     resolverAddress: string
     TTL: BigNumber
+    resolver: ethers.Contract
     
     // LEVEL 2 : info from the Resolver at this.resolverAddress (level 1)
     resolvedName: string
@@ -52,7 +53,13 @@ export class Domain{
         this.namehash = ethers.utils.namehash(this.name)
         this.subdomains = []
         this.initialization = new Promise<boolean>((resolve, reject) => {
-            this.refresh().then(() => this.refreshResolve(signer)).then(() => resolve(true)).catch(err => reject(err))
+            this.refresh().then(() => {
+                if (!ethers.utils.bigNumberify(this.ownerAddress).eq(0)) this.refreshResolve(signer)
+            }).then(() =>
+                resolve(true)
+            ).catch(err =>
+                reject(err)
+            )
         });
     }
 
@@ -69,19 +76,20 @@ export class Domain{
      * Get/Refresh the level 2 info of the domain
      * @param {ethers.Signer} signer : the signer
      */
-    // async refreshResolve(provider: ethers.providers.Web3Provider) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
-    async refreshResolve(signer: ethers.Signer) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
+    async refreshResolve(signer?: ethers.Signer) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
         
+        if (!signer && !this.resolver) throw new Error('refreshResolve() needs either a signer or a resolver to be set')
+        else if (!signer) signer = this.resolver.signer
+
         if (ethers.utils.bigNumberify(this.resolverAddress).isZero()) return // check if this domain has a resolver set
 
-        let resolver = new ethers.Contract(this.resolverAddress, RESOLVER.ABI, signer) // instentiate the resolver
-        resolver = resolver.connect(signer)
-        this.resolvedName = await resolver.name(this.namehash) // get the name
-        this.address = await resolver.addr(this.namehash) // get the address
+        this.resolver = new ethers.Contract(this.resolverAddress, RESOLVER.ABI, signer) // instentiate the resolver
+        this.resolvedName = await this.resolver.name(this.namehash) // get the name
+        this.address = await this.resolver.addr(this.namehash) // get the address
 
         // get the content
-        if (await resolver.supportsInterface(RESOLVER.HASH.contenthash)) { // check if the resolver is EIP1577 compliant
-            const rawContent = await resolver.contenthash(this.namehash) // get the raw content-hash
+        if (await this.resolver.supportsInterface(RESOLVER.HASH.contenthash)) { // check if the resolver is EIP1577 compliant
+            const rawContent = await this.resolver.contenthash(this.namehash) // get the raw content-hash
             try {
                 this.content = cth.decode(rawContent) // try to decode the content-hash into an IPFS or Swarm hash
             } catch(err) {
@@ -90,7 +98,7 @@ export class Domain{
             }
         } else {
             console.warn('the resolver of ', this.name, 'is deprecated !')
-            this.content = await resolver.content(this.namehash) // if the resolver doesn't supports the EIP 1577, get the content
+            this.content = await this.resolver.content(this.namehash) // if the resolver doesn't supports the EIP 1577, get the content
         }
     }
 
@@ -172,20 +180,45 @@ export class Domain{
     //     return await root.registrar.info(this.nodeName)
     // }
 
-    async setResolver(resolverAddress: string): Promise<TransactionResponse> {
+    // LEVEL 1 : ENS registry function
+    setResolver(resolverAddress: string): Promise<TransactionResponse> {
         return this.registry.setResolver(this.namehash, resolverAddress)
     }
 
-    async setOwner(address: string): Promise<TransactionResponse> {
+    setOwner(address: string): Promise<TransactionResponse> {
         return this.registry.setOwner(this.namehash, address)
     }
 
-    async setTtl(address: string): Promise<TransactionResponse> {
+    setTtl(address: string): Promise<TransactionResponse> {
         return this.registry.setTTL(this.namehash, address)
     }
 
-    async setSubdomain(name: string, owner: string): Promise<TransactionResponse> { // TODO set new subdomain as child of the current domain
+    setSubdomain(name: string, owner: string): Promise<TransactionResponse> { // TODO set new subdomain as child of the current domain
         const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name))
         return this.registry.setSubnodeOwner(this.namehash, hash, owner)
+    }
+
+    // LEVEL 2 : Resolver functin at this.resolverAddress (level 1)
+    setName(name: string): Promise<TransactionResponse> {
+        return this.resolver.setName(this.namehash, name)
+    }
+
+    setContent(type: string, content: string): Promise<TransactionResponse> {
+        let contentHash
+        switch(type) {
+            case 'ipfs':
+                contentHash = cth.fromIpfs(content)
+                break
+            case 'swarm':
+                contentHash = cth.fromSwarm(content)
+                break
+            default:
+                throw new Error('invalid type, type must be \'ipfs\' or \'swarm\'')
+        }
+        return this.resolver.setContenthash(this.namehash, '0x' + contentHash)
+    }
+
+    setAddress(address: string): Promise<TransactionResponse> {
+        return this.resolver.setAddr(this.namehash, address)
     }
 }

@@ -64,7 +64,14 @@ var Domain = /** @class */ (function () {
         this.namehash = ethers_1.ethers.utils.namehash(this.name);
         this.subdomains = [];
         this.initialization = new Promise(function (resolve, reject) {
-            _this.refresh().then(function () { return _this.refreshResolve(signer); }).then(function () { return resolve(true); }).catch(function (err) { return reject(err); });
+            _this.refresh().then(function () {
+                if (!ethers_1.ethers.utils.bigNumberify(_this.ownerAddress).eq(0))
+                    _this.refreshResolve(signer);
+            }).then(function () {
+                return resolve(true);
+            }).catch(function (err) {
+                return reject(err);
+            });
         });
     }
     /**
@@ -97,32 +104,33 @@ var Domain = /** @class */ (function () {
      * Get/Refresh the level 2 info of the domain
      * @param {ethers.Signer} signer : the signer
      */
-    // async refreshResolve(provider: ethers.providers.Web3Provider) { // ? more choice of what to refresh : all, only owner, only resolver, both owner and resolver ....
     Domain.prototype.refreshResolve = function (signer) {
         return __awaiter(this, void 0, void 0, function () {
-            var resolver, _a, _b, rawContent, _c;
+            var _a, _b, rawContent, _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
+                        if (!signer && !this.resolver)
+                            throw new Error('refreshResolve() needs either a signer or a resolver to be set');
+                        else if (!signer)
+                            signer = this.resolver.signer;
                         if (ethers_1.ethers.utils.bigNumberify(this.resolverAddress).isZero())
                             return [2 /*return*/]; // check if this domain has a resolver set
-                        resolver = new ethers_1.ethers.Contract(this.resolverAddress, constants_1.RESOLVER.ABI, signer) // instentiate the resolver
-                        ;
-                        resolver = resolver.connect(signer);
+                        this.resolver = new ethers_1.ethers.Contract(this.resolverAddress, constants_1.RESOLVER.ABI, signer); // instentiate the resolver
                         _a = this;
-                        return [4 /*yield*/, resolver.name(this.namehash)]; // get the name
+                        return [4 /*yield*/, this.resolver.name(this.namehash)]; // get the name
                     case 1:
                         _a.resolvedName = _d.sent(); // get the name
                         _b = this;
-                        return [4 /*yield*/, resolver.addr(this.namehash)
+                        return [4 /*yield*/, this.resolver.addr(this.namehash)
                             // get the content
                         ]; // get the address
                     case 2:
                         _b.address = _d.sent(); // get the address
-                        return [4 /*yield*/, resolver.supportsInterface(constants_1.RESOLVER.HASH.contenthash)];
+                        return [4 /*yield*/, this.resolver.supportsInterface(constants_1.RESOLVER.HASH.contenthash)];
                     case 3:
                         if (!_d.sent()) return [3 /*break*/, 5];
-                        return [4 /*yield*/, resolver.contenthash(this.namehash)]; // get the raw content-hash
+                        return [4 /*yield*/, this.resolver.contenthash(this.namehash)]; // get the raw content-hash
                     case 4:
                         rawContent = _d.sent() // get the raw content-hash
                         ;
@@ -137,7 +145,7 @@ var Domain = /** @class */ (function () {
                     case 5:
                         console.warn('the resolver of ', this.name, 'is deprecated !');
                         _c = this;
-                        return [4 /*yield*/, resolver.content(this.namehash)]; // if the resolver doesn't supports the EIP 1577, get the content
+                        return [4 /*yield*/, this.resolver.content(this.namehash)]; // if the resolver doesn't supports the EIP 1577, get the content
                     case 6:
                         _c.content = _d.sent(); // if the resolver doesn't supports the EIP 1577, get the content
                         _d.label = 7;
@@ -218,35 +226,40 @@ var Domain = /** @class */ (function () {
     //     const root = this.rootParent
     //     return await root.registrar.info(this.nodeName)
     // }
+    // LEVEL 1 : ENS registry function
     Domain.prototype.setResolver = function (resolverAddress) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, this.registry.setResolver(this.namehash, resolverAddress)];
-            });
-        });
+        return this.registry.setResolver(this.namehash, resolverAddress);
     };
     Domain.prototype.setOwner = function (address) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, this.registry.setOwner(this.namehash, address)];
-            });
-        });
+        return this.registry.setOwner(this.namehash, address);
     };
     Domain.prototype.setTtl = function (address) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, this.registry.setTTL(this.namehash, address)];
-            });
-        });
+        return this.registry.setTTL(this.namehash, address);
     };
     Domain.prototype.setSubdomain = function (name, owner) {
-        return __awaiter(this, void 0, void 0, function () {
-            var hash;
-            return __generator(this, function (_a) {
-                hash = ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.toUtf8Bytes(name));
-                return [2 /*return*/, this.registry.setSubnodeOwner(this.namehash, hash, owner)];
-            });
-        });
+        var hash = ethers_1.ethers.utils.keccak256(ethers_1.ethers.utils.toUtf8Bytes(name));
+        return this.registry.setSubnodeOwner(this.namehash, hash, owner);
+    };
+    // LEVEL 2 : Resolver functin at this.resolverAddress (level 1)
+    Domain.prototype.setName = function (name) {
+        return this.resolver.setName(this.namehash, name);
+    };
+    Domain.prototype.setContent = function (type, content) {
+        var contentHash;
+        switch (type) {
+            case 'ipfs':
+                contentHash = cth.fromIpfs(content);
+                break;
+            case 'swarm':
+                contentHash = cth.fromSwarm(content);
+                break;
+            default:
+                throw new Error('invalid type, type must be \'ipfs\' or \'swarm\'');
+        }
+        return this.resolver.setContenthash(this.namehash, '0x' + contentHash);
+    };
+    Domain.prototype.setAddress = function (address) {
+        return this.resolver.setAddr(this.namehash, address);
     };
     return Domain;
 }());

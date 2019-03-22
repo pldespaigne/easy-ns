@@ -19,6 +19,7 @@ export declare class Domain {
     ownerAddress: string;
     resolverAddress: string;
     TTL: BigNumber;
+    resolver: ethers.Contract;
     resolvedName: string;
     content: string;
     address: string;
@@ -37,7 +38,7 @@ export declare class Domain {
      * Get/Refresh the level 2 info of the domain
      * @param {ethers.Signer} signer : the signer
      */
-    refreshResolve(signer: ethers.Signer): Promise<void>;
+    refreshResolve(signer?: ethers.Signer): Promise<void>;
     /**
      * Perform the same as ens.domain(name), but for the local subtree of domains.
      * - check if the current node exist or not, if not create it
@@ -56,4 +57,7 @@ export declare class Domain {
     setOwner(address: string): Promise<TransactionResponse>;
     setTtl(address: string): Promise<TransactionResponse>;
     setSubdomain(name: string, owner: string): Promise<TransactionResponse>;
+    setName(name: string): Promise<TransactionResponse>;
+    setContent(type: string, content: string): Promise<TransactionResponse>;
+    setAddress(address: string): Promise<TransactionResponse>;
 }
