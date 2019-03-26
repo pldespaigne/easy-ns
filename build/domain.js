@@ -65,7 +65,7 @@ var Domain = /** @class */ (function () {
         this.subdomains = [];
         this.initialization = new Promise(function (resolve, reject) {
             _this.refresh().then(function () {
-                if (!ethers_1.ethers.utils.bigNumberify(_this.ownerAddress).eq(0))
+                if (!ethers_1.ethers.utils.bigNumberify(_this.resolverAddress).eq(0))
                     _this.refreshResolve(signer);
             }).then(function () {
                 return resolve(true);

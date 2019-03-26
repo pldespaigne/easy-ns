@@ -54,7 +54,7 @@ export class Domain{
         this.subdomains = []
         this.initialization = new Promise<boolean>((resolve, reject) => {
             this.refresh().then(() => {
-                if (!ethers.utils.bigNumberify(this.ownerAddress).eq(0)) this.refreshResolve(signer)
+                if (!ethers.utils.bigNumberify(this.resolverAddress).eq(0)) this.refreshResolve(signer)
             }).then(() =>
                 resolve(true)
             ).catch(err =>
