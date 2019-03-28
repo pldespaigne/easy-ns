@@ -134,12 +134,14 @@ var Domain = /** @class */ (function () {
                     case 4:
                         rawContent = _d.sent() // get the raw content-hash
                         ;
-                        try {
-                            this.content = cth.decode(rawContent); // try to decode the content-hash into an IPFS or Swarm hash
-                        }
-                        catch (err) {
-                            console.warn('Unable to decode content-hash : ', err, 'using the raw content hash');
-                            this.content = rawContent;
+                        if (!ethers_1.ethers.utils.bigNumberify(rawContent).eq(0)) { // do not decode content-hash if it is not set, i.e. if it is equal to 0x00..
+                            try {
+                                this.content = cth.decode(rawContent); // try to decode the content-hash into an IPFS or Swarm hash
+                            }
+                            catch (err) {
+                                console.warn('Unable to decode content-hash : ', err, 'using the raw content hash');
+                                this.content = rawContent;
+                            }
                         }
                         return [3 /*break*/, 7];
                     case 5:
