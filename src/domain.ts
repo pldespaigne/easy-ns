@@ -90,11 +90,13 @@ export class Domain{
         // get the content
         if (await this.resolver.supportsInterface(RESOLVER.HASH.contenthash)) { // check if the resolver is EIP1577 compliant
             const rawContent = await this.resolver.contenthash(this.namehash) // get the raw content-hash
-            try {
-                this.content = cth.decode(rawContent) // try to decode the content-hash into an IPFS or Swarm hash
-            } catch(err) {
-                console.warn('Unable to decode content-hash : ', err, 'using the raw content hash')
-                this.content = rawContent
+            if (!ethers.utils.bigNumberify(rawContent).eq(0)) { // do not decode content-hash if it is not set, i.e. if it is equal to 0x00..
+                try {
+                    this.content = cth.decode(rawContent) // try to decode the content-hash into an IPFS or Swarm hash
+                } catch(err) {
+                    console.warn('Unable to decode content-hash : ', err, 'using the raw content hash')
+                    this.content = rawContent
+                }
             }
         } else {
             console.warn('the resolver of ', this.name, 'is deprecated !')
