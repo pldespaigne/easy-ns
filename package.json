@@ -1,6 +1,6 @@
 {
   "name": "easy-ns",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "The most simple way to use ENS",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
