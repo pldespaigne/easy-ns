@@ -1,8 +1,10 @@
 
 import { ENS } from './ens';
+import { Domain } from './domain';
 
 export {
-    ENS
+    ENS,
+    Domain
 }
 
 // ! NO RELEASE TEST ONLY
