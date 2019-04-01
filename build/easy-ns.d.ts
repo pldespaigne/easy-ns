@@ -1,3 +1,4 @@
 import { ENS } from './ens';
-export { ENS };
+import { Domain } from './domain';
+export { ENS, Domain };
 export declare const hello: () => string;

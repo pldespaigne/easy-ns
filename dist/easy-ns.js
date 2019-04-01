@@ -1266,10 +1266,12 @@ exports.Domain = Domain;
 Object.defineProperty(exports, "__esModule", { value: true });
 var ens_1 = require("./ens");
 exports.ENS = ens_1.ENS;
+var domain_1 = require("./domain");
+exports.Domain = domain_1.Domain;
 // ! NO RELEASE TEST ONLY
 exports.hello = function () { return 'hello world !'; };
 
-},{"./ens":4}],4:[function(require,module,exports){
+},{"./domain":2,"./ens":4}],4:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
