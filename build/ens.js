@@ -94,7 +94,7 @@ var ENS = /** @class */ (function () {
                         this.domains.push(new domain_1.Domain('eth', this.registry, this.signer)); // adding 'eth' TLD
                         this.domains.push(new domain_1.Domain('reverse', this.registry, this.signer)); // adding 'eth' TLD
                         // TODO handle other network agnostic TLDs
-                        if (net.name === 'ropsten') { // for the Ropsten testnet
+                        if (net.name === 'ropsten' || net.name === 'goerli' || net.name === 'rinkeby') { // for the Ropsten testnet
                             // this.domains.push(new RootDomain('test', this.registry, this.provider, this.signer))    // adding 'test' TLD
                             this.domains.push(new domain_1.Domain('test', this.registry, this.signer)); // adding 'test' TLD
                             // TODO handle other Ropsten TLDs
