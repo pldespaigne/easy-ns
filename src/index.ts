@@ -1,6 +1,5 @@
+import * as easyns from './easy-ns';
 
-import * as easyNS from './easy-ns';
-
-export { easyNS };
+export { easyns };
 
 export * from './easy-ns';

@@ -10,6 +10,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var easyNS = __importStar(require("./easy-ns"));
-exports.easyNS = easyNS;
+var easyns = __importStar(require("./easy-ns"));
+exports.easyns = easyns;
 __export(require("./easy-ns"));

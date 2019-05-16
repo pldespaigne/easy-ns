@@ -1,4 +1,4 @@
-import { ENS } from './ens';
-import { Domain } from './domain';
-export { ENS, Domain };
-export declare const hello: () => string;
+import { Registry } from './registry/registry';
+declare function fromNetworkName(network: string): Registry;
+declare function fromMetaMask(): Promise<Registry>;
+export { Registry, fromNetworkName, fromMetaMask, };
