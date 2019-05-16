@@ -7,15 +7,20 @@
     "build": "tsc",
     "dist": "browserify ./build/index.js -o ./dist/easyns.js -s easyns",
     "build:dist": "npm run build && npm run dist",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "demo": "echo \"Visit http://localhost:8080/demo\" && static ."
   },
   "author": "pldespaigne",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
     "browserify": "^16.2.3",
+    "chai": "^4.2.0",
     "ethereum-waffle": "^2.0.12",
+    "mocha": "^6.1.4",
     "node-static": "^0.7.11",
+    "ts-node-dev": "^1.0.0-pre.39",
     "typescript": "^3.4.5"
   },
   "dependencies": {
