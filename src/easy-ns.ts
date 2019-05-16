@@ -1,11 +1,27 @@
 
-import { ENS } from './ens';
-import { Domain } from './domain';
+import { getDefaultProvider, providers } from 'ethers';
 
-export {
-    ENS,
-    Domain
+import { Registry } from './registry/registry';
+
+function fromNetworkName(network: string) {
+    const provider = getDefaultProvider(network);
+    return new Registry(provider);
 }
 
-// ! NO RELEASE TEST ONLY
-export const hello = () => 'hello world !'
+declare const ethereum: any;
+async function fromMetaMask() {
+    await ethereum.enable();
+    let provider = new providers.Web3Provider(ethereum);
+    let network = await provider.getNetwork()
+    provider.network = network;
+    let registry = new Registry(provider);
+    registry.enableSending(provider.getSigner());
+    return registry;
+}
+
+export {
+    Registry,
+
+    fromNetworkName,
+    fromMetaMask,
+}

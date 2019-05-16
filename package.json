@@ -1,37 +1,25 @@
 {
   "name": "easy-ns",
-  "version": "1.0.10",
-  "description": "The most simple way to use ENS",
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "build": "tsc",
-    "dist": "mkdirp ./dist && browserify ./build/index.js --standalone easyns > ./dist/easy-ns.js",
-    "uglify": "terser ./dist/easy-ns.js --compress --mangle --output ./dist/easy-ns.min.js",
-    "doc": "typedoc --out ./docs ./src",
-    "clean": "rimraf ./dist ./docs",
-    "demo": "static .",
-    "dev": "npm run build && npm run dist && npm run demo"
+    "dist": "browserify ./build/index.js -o ./dist/easyns.js -s easyns",
+    "build:dist":"npm run build && npm run dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "echo \"Visit http://localhost:8080/demo\" && static ."
   },
   "author": "pldespaigne",
   "license": "ISC",
   "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.6",
     "browserify": "^16.2.3",
-    "chai": "^4.2.0",
-    "mkdirp": "^0.5.1",
-    "mocha": "^6.0.2",
+    "ethereum-waffle": "^2.0.12",
     "node-static": "^0.7.11",
-    "rimraf": "^2.6.3",
-    "terser": "^3.16.1",
-    "ts-node-dev": "^1.0.0-pre.32",
-    "typedoc": "^0.14.2",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
-    "content-hash": "^2.4.0",
+    "content-hash": "^2.3.2",
     "ethers": "^4.0.27"
   }
 }
